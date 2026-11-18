@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kopinawa Roastery</title>
+<style>
+:root{--bg:#ece3d3;--sf:#f8f2e7;--ink:#3a2a1c;--mut:#765f4a;--ln:#d6c7ae;--gr:#c4550f;--ro:#6b4226;--ok:#4f7a3a;--bad:#a8352a;--soft:#e4d8c3;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1812;--sf:#2a2118;--ink:#efe4d3;--mut:#b3a28b;--ln:#43362a;--gr:#f08a3c;--ro:#d1a37a;--ok:#8fc27a;--bad:#ff8a7a;--soft:#35291f;--on:#1f1812}}
+:root[data-theme="dark"]{--bg:#1f1812;--sf:#2a2118;--ink:#efe4d3;--mut:#b3a28b;--ln:#43362a;--gr:#f08a3c;--ro:#d1a37a;--ok:#8fc27a;--bad:#ff8a7a;--soft:#35291f;--on:#1f1812}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;font-weight:700}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:28px}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--ln);margin-bottom:16px}
+nav button{background:none;border:0;padding:10px 14px;font:inherit;font-weight:600;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--gr)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gr);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.k{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:12px}
+.k small{color:var(--mut);display:block}
+.k b{font:700 22px "Bricolage Grotesque",system-ui,sans-serif}
+.k.big{border-left:5px solid var(--ro)}
+.k.g{border-left:5px solid var(--gr)}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+section.card{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:14px;margin-bottom:16px}
+h2{font-size:18px;margin-bottom:10px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mut);gap:3px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:4px;padding:8px;min-width:0}
+.btn{background:var(--gr);color:var(--on);border:0;border-radius:4px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}
+.x{background:none;border:0;color:var(--bad);cursor:pointer;font-size:16px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{color:var(--mut);font-weight:600}
+td.n,th.n{text-align:right}
+.bar{height:8px;background:var(--soft);border-radius:4px;min-width:70px}
+.bar i{display:block;height:100%;background:var(--gr);border-radius:4px}
+.warn{background:var(--soft);border-left:4px solid var(--bad);padding:8px 12px;margin-bottom:6px;border-radius:4px}
+.empty{color:var(--mut);padding:8px 0}
+#msg{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bad);color:#fff;padding:8px 12px;border-radius:4px;margin-bottom:10px;display:none}
+.mini{font-size:13px;color:var(--mut)}
+#expw{position:relative}
+#expm{position:absolute;right:0;top:100%;margin-top:4px;background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:4px;z-index:6;min-width:170px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+#expm[hidden]{display:none}
+#expm button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:inherit;padding:8px 10px;border-radius:4px;cursor:pointer}
+#expm button:hover,#expm button:focus-visible{background:var(--soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Kopinawa Roastery</h1><label class="mini" style="flex-direction:row;align-items:center;gap:6px">Batas stok minimum (kg)<input id="min" type="number" min="0" style="width:80px" onchange="setMin(this.value)"></label>
+<label class="mini" style="flex-direction:row;align-items:center;gap:6px">Nama operator<input id="op" style="width:110px" maxlength="40" onchange="setOp(this.value)"></label>
+<span id="st" class="mini">● …</span>
+<div id="expw"><button class="btn" onclick="toggleExp()" aria-haspopup="true">Export CSV ▾</button>
+<div id="expm" hidden><button onclick="doExport(1)">Hari ini</button><button onclick="doExport(7)">7 hari terakhir</button><button onclick="doExport(30)">30 hari terakhir</button><button onclick="doExport(365)">365 hari terakhir</button></div></div></header>
+<nav id="nav"></nav>
+<div id="msg" role="alert"></div>
+<main id="main"></main>
+</div>
+<script>
+var D={g:[],r:[],s:[],min:20,rev:-1},tab="dash",pending=false,OP="";
+try{OP=localStorage.getItem("op")||""}catch(e){}
+var $=function(i){return document.getElementById(i)};
+var ld=function(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+var today=function(){return ld(new Date())};
+var rp=function(n){return(n<0?"-":"")+"Rp "+Math.abs(Math.round(n)).toLocaleString("id-ID")};
+var kg=function(n){return(Math.round(n*100)/100).toLocaleString("id-ID")+" kg"};
+var pc=function(n){return(Math.round(n*10)/10).toLocaleString("id-ID")+"%"};
+var sum=function(a,f){return a.reduce(function(t,x){return t+f(x)},0)};
+var uid=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var gOf=function(id){return D.g.find(function(x){return x.id===id})};
+var rOf=function(id){return D.r.find(function(x){return x.id===id})};
+function gStock(g){return g.kg-sum(D.r.filter(function(r){return r.g===g.id}),function(r){return r.in})}
+function rRem(r){return r.out-sum(D.s.filter(function(s){return s.r===r.id}),function(s){return s.kg})}
+function rCost(r){var g=gOf(r.g);return g?g.price*r.in/r.out:0}
+function gLabel(g){return g.farmer+(g.origin?" ("+g.origin+")":"")+" – "+g.date}
+function rLabel(r){var g=gOf(r.g);return r.profile+" – "+(g?g.farmer:"?")+" – "+r.date}
+function err(t){var m=$("msg");m.textContent=t;m.style.display="block";setTimeout(function(){m.style.display="none"},4000)}
+function api(method,url,body){
+ return fetch(url,{method:method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined})
+ .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||"Gagal menyimpan ke server.");return j})})}
+function act(p){return p.then(function(d){D=d;setOnline(true);render()}).catch(function(e){
+ if(e instanceof TypeError){setOnline(false);err("Server tidak terjangkau. Data belum tersimpan.")}else err(e.message)})}
+function setOnline(on){var e=$("st");e.textContent=on?"● Terhubung":"● Terputus";e.style.color=on?"var(--ok)":"var(--bad)"}
+function setOp(v){OP=v.trim();try{localStorage.setItem("op",OP)}catch(e){}}
+function setMin(v){act(api("PUT","/api/min",{min:+v||0}))}
+function setTab(t){tab=t;render()}
+function f(e){e.preventDefault();var o={by:OP};new FormData(e.target).forEach(function(v,k){o[k]=v});return o}
+function addG(e){act(api("POST","/api/g",f(e)))}
+function addR(e){act(api("POST","/api/r",f(e)))}
+function addS(e){act(api("POST","/api/s",f(e)))}
+function del(t,id){act(api("DELETE","/api/"+t+"/"+id))}
+function busy(){var a=document.activeElement;return a&&(a.tagName==="INPUT"||a.tagName==="SELECT")}
+function poll(){fetch("/api/data",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+ setOnline(true);if(d.rev!==D.rev){D=d;if(busy())pending=true;else render()}}).catch(function(){setOnline(false)})}
+document.addEventListener("focusout",function(){setTimeout(function(){if(pending&&!busy()){pending=false;render()}},200)});
+
+function kpi(l,v,c){return'<div class="k '+(c||"")+'"><small>'+l+'</small><b>'+v+'</b></div>'}
+function table(h,rows,empty){
+ if(!rows.length)return'<div class="empty">'+empty+'</div>';
+ return'<div class="tw"><table><thead><tr>'+h.map(function(x){return'<th class="'+(x[0]==="#"?"n":"")+'">'+x.replace(/^#/,"")+'</th>'}).join("")+'</tr></thead><tbody>'+rows.join("")+'</tbody></table></div>'}
+function row(cells,t,id){return"<tr>"+cells.map(function(c){return'<td class="'+(c[0]==="#"?"n":"")+'">'+String(c).replace(/^#/,"")+"</td>"}).join("")+(t?'<td><button class="x" title="Hapus" aria-label="Hapus" onclick="del(\''+t+"','"+id+'\')">✕</button></td>':"")+"</tr>"}
+
+function stats(){
+ var buy=sum(D.g,function(g){return g.kg*g.price});
+ var rev=sum(D.s,function(s){return s.kg*s.price});
+ var hpp=sum(D.s,function(s){var r=rOf(s.r);return r?s.kg*rCost(r):0});
+ var gs=sum(D.g,gStock), rs=sum(D.r,rRem);
+ var rin=sum(D.r,function(r){return r.in}),rout=sum(D.r,function(r){return r.out});
+ return{buy:buy,rev:rev,hpp:hpp,profit:rev-hpp,gs:gs,rs:rs,shrink:rin?(1-rout/rin)*100:0,margin:rev?(rev-hpp)/rev*100:0,
+  stockVal:sum(D.g,function(g){return gStock(g)*g.price})}}
+
+function vDash(){
+ var s=stats(),w="";
+ D.g.forEach(function(g){var st=gStock(g);if(st<=D.min&&st>0)w+='<div class="warn">Green bean hampir habis: '+esc(gLabel(g))+' tersisa '+kg(st)+'.</div>'});
+ D.r.forEach(function(r){var st=rRem(r);if(st<=D.min&&st>0)w+='<div class="warn">Roast bean hampir habis: '+esc(rLabel(r))+' tersisa '+kg(st)+'.</div>'});
+ return'<div class="grid">'+kpi("Stok green bean",kg(s.gs),"g")+kpi("Nilai stok green bean",rp(s.stockVal),"g")+kpi("Stok roast bean",kg(s.rs),"big")+kpi("Rata-rata penyusutan",pc(s.shrink))+'</div>'+
+ '<div class="grid">'+kpi("Total pembelian",rp(s.buy))+kpi("Total penjualan",rp(s.rev))+kpi("Modal bean terjual",rp(s.hpp))+kpi("Keuntungan",'<span class="'+(s.profit<0?"neg":"pos")+'">'+rp(s.profit)+'</span>',"big")+kpi("Margin",pc(s.margin))+'</div>'+
+ '<section class="card"><h2>Peringatan stok</h2>'+(w||'<div class="empty">Tidak ada stok di bawah batas minimum.</div>')+'</section>'+
+ '<section class="card"><h2>Stok per lot green bean</h2>'+table(["Lot","#Masuk","#Sisa","Sisa"],D.g.filter(function(g){return gStock(g)>0}).map(function(g){var p=gStock(g)/g.kg*100;return row([esc(gLabel(g)),"#"+kg(g.kg),"#"+kg(gStock(g)),'<div class="bar"><i style="width:'+p+'%"></i></div>'])}),"Belum ada stok green bean.")+'</section>'}
+
+function opt(a,fn){return a.length?a.map(fn).join(""):'<option value="">(belum ada data)</option>'}
+function vGreen(){
+ return'<section class="card"><h2>Catat green bean masuk</h2><form onsubmit="addG(event)">'+
+ '<label>Tanggal<input type="date" name="date" value="'+today()+'" required></label>'+
+ '<label>Petani / supplier<input name="farmer" required></label>'+
+ '<label>Asal / varietas<input name="origin" placeholder="Gayo, Kintamani…"></label>'+
+ '<label>Berat (kg)<input type="number" name="kg" step="0.01" min="0.01" required></label>'+
+ '<label>Harga per kg (Rp)<input type="number" name="price" min="0" required></label>'+
+ '<button class="btn">Simpan green bean</button></form></section>'+
+ '<section class="card"><h2>Riwayat green bean</h2>'+table(["Tanggal","Petani","Asal","#Masuk","#Harga/kg","#Total","#Sisa","Oleh",""],D.g.slice().reverse().map(function(g){return row([g.date,esc(g.farmer),esc(g.origin||"-"),"#"+kg(g.kg),"#"+rp(g.price),"#"+rp(g.kg*g.price),"#"+kg(gStock(g)),esc(g.by||"-")],"g",g.id)}),"Belum ada pembelian. Isi formulir di atas untuk mulai.")+'</section>'}
+
+function vRoast(){
+ var avail=D.g.filter(function(g){return gStock(g)>0});
+ return'<section class="card"><h2>Catat roasting</h2><form onsubmit="addR(event)">'+
+ '<label>Tanggal<input type="date" name="date" value="'+today()+'" required></label>'+
+ '<label>Lot green bean<select name="g" required>'+opt(avail,function(g){return'<option value="'+g.id+'">'+esc(gLabel(g))+" · sisa "+kg(gStock(g))+"</option>"})+'</select></label>'+
+ '<label>Green bean di-roast (kg)<input type="number" name="in" step="0.01" min="0.01" required></label>'+
+ '<label>Hasil roast (kg)<input type="number" name="out" step="0.01" min="0.01" required></label>'+
+ '<label>Profile roast<input name="profile" list="pf" placeholder="Medium, Light…" required><datalist id="pf"><option>Light</option><option>Medium</option><option>Medium-Dark</option><option>Dark</option></datalist></label>'+
+ '<button class="btn">Simpan roast</button></form></section>'+
+ '<section class="card"><h2>Riwayat roasting</h2>'+table(["Tanggal","Petani","Profile","#Masuk","#Hasil","#Susut","#Modal/kg roast","#Sisa","Oleh",""],D.r.slice().reverse().map(function(r){var g=gOf(r.g);return row([r.date,esc(g?g.farmer:"-"),esc(r.profile),"#"+kg(r.in),"#"+kg(r.out),"#"+pc((1-r.out/r.in)*100),"#"+rp(rCost(r)),"#"+kg(rRem(r)),esc(r.by||"-")],"r",r.id)}),"Belum ada roasting.")+'</section>'}
+
+function vSales(){
+ var avail=D.r.filter(function(r){return rRem(r)>0});
+ return'<section class="card"><h2>Catat penjualan roast bean</h2><form onsubmit="addS(event)">'+
+ '<label>Tanggal<input type="date" name="date" value="'+today()+'" required></label>'+
+ '<label>Pelanggan<input name="customer" placeholder="Cafe, reseller, eceran…"></label>'+
+ '<label>Batch roast<select name="r" required>'+opt(avail,function(r){return'<option value="'+r.id+'">'+esc(rLabel(r))+" · sisa "+kg(rRem(r))+"</option>"})+'</select></label>'+
+ '<label>Berat (kg)<input type="number" name="kg" step="0.01" min="0.01" required></label>'+
+ '<label>Harga jual per kg (Rp)<input type="number" name="price" min="0" required></label>'+
+ '<button class="btn">Simpan penjualan</button></form></section>'+
+ '<section class="card"><h2>Riwayat penjualan dan keuntungan</h2>'+table(["Tanggal","Pelanggan","Batch","#Kg","#Harga/kg","#Omzet","#Modal","#Untung","Oleh",""],D.s.slice().reverse().map(function(s){var r=rOf(s.r),c=r?s.kg*rCost(r):0,p=s.kg*s.price-c;return row([s.date,esc(s.customer||"-"),esc(r?r.profile+" "+r.date:"-"),"#"+kg(s.kg),"#"+rp(s.price),"#"+rp(s.kg*s.price),"#"+rp(c),'#<span class="'+(p<0?"neg":"pos")+'">'+rp(p)+"</span>",esc(s.by||"-")],"s",s.id)}),"Belum ada penjualan.")+'</section>'}
+
+function vRep(){
+ var farm={},prof={},cust={};
+ D.g.forEach(function(g){var a=farm[g.farmer]=farm[g.farmer]||{kg:0,t:0};a.kg+=g.kg;a.t+=g.kg*g.price});
+ D.r.forEach(function(r){var a=prof[r.profile]=prof[r.profile]||{n:0,i:0,o:0,sold:0,p:0};a.n++;a.i+=r.in;a.o+=r.out});
+ D.s.forEach(function(s){var r=rOf(s.r),p=s.kg*s.price-(r?s.kg*rCost(r):0);
+  if(r){var a=prof[r.profile];a.sold+=s.kg;a.p+=p}
+  var c=cust[s.customer||"(tanpa nama)"]=cust[s.customer||"(tanpa nama)"]||{kg:0,rev:0,p:0};c.kg+=s.kg;c.rev+=s.kg*s.price;c.p+=p});
+ var R=function(o,fn){return Object.keys(o).map(function(k){return row(fn(k,o[k]))})};
+ return'<section class="card"><h2>Per petani</h2>'+table(["Petani","#Total kg","#Total beli","#Rata-rata harga/kg"],R(farm,function(k,a){return[esc(k),"#"+kg(a.kg),"#"+rp(a.t),"#"+rp(a.t/a.kg)]}),"Belum ada data.")+'</section>'+
+ '<section class="card"><h2>Per profile roast</h2>'+table(["Profile","#Batch","#Rata-rata susut","#Kg terjual","#Untung"],R(prof,function(k,a){return[esc(k),"#"+a.n,"#"+pc((1-a.o/a.i)*100),"#"+kg(a.sold),"#"+rp(a.p)]}),"Belum ada data.")+'</section>'+
+ '<section class="card"><h2>Per pelanggan</h2>'+table(["Pelanggan","#Kg","#Omzet","#Untung"],R(cust,function(k,a){return[esc(k),"#"+kg(a.kg),"#"+rp(a.rev),"#"+rp(a.p)]}),"Belum ada data.")+'</section>'+
+ '<p class="mini">Modal per kg roast = harga green bean × kg di-roast ÷ kg hasil roast. Biaya gas, tenaga kerja, dan kemasan belum dihitung. Data tersimpan di server gudang dan dipakai bersama semua PC.</p>'}
+
+function toggleExp(){var m=$("expm");m.hidden=!m.hidden}
+document.addEventListener("click",function(e){if(!e.target.closest("#expw"))$("expm").hidden=true});
+function csv(rows){return rows.map(function(r){return r.map(function(c){c=String(c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(",")}).join("\r\n")}
+async function doExport(n){
+ $("expm").hidden=true;
+ var to=today(),from=ld(new Date(Date.now()-(n-1)*864e5));
+ var inR=function(x){return x.date>=from&&x.date<=to};
+ var G=D.g.filter(inR),R=D.r.filter(inR),S=D.s.filter(inR);
+ if(!G.length&&!R.length&&!S.length)return err("Tidak ada catatan pada periode ini.");
+ var rv=0,hp=0,rows=[];
+ var sRows=S.map(function(s){var r=rOf(s.r),c=r?s.kg*rCost(r):0;rv+=s.kg*s.price;hp+=c;return[s.date,s.customer||"",r?r.profile+" "+r.date:"",s.kg,s.price,Math.round(s.kg*s.price),Math.round(c),Math.round(s.kg*s.price-c)]});
+ rows.push(["Periode",from,to],["Total pembelian green bean",Math.round(sum(G,function(g){return g.kg*g.price}))],["Total penjualan",Math.round(rv)],["Keuntungan",Math.round(rv-hp)],[]);
+ rows.push(["GREEN BEAN MASUK"],["Tanggal","Petani","Asal","Kg","Harga/kg","Total"]);
+ G.forEach(function(g){rows.push([g.date,g.farmer,g.origin,g.kg,g.price,Math.round(g.kg*g.price)])});
+ rows.push([],["ROASTING"],["Tanggal","Petani","Profile","Kg green","Kg hasil","Susut %","Modal/kg roast"]);
+ R.forEach(function(r){var g=gOf(r.g);rows.push([r.date,g?g.farmer:"",r.profile,r.in,r.out,Math.round((1-r.out/r.in)*1000)/10,Math.round(rCost(r))])});
+ rows.push([],["PENJUALAN"],["Tanggal","Pelanggan","Batch","Kg","Harga/kg","Omzet","Modal","Untung"]);
+ sRows.forEach(function(r){rows.push(r)});
+ var b=new Blob(["\ufeff"+csv(rows)],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(b);a.download="roastery-"+from+"_"+to+".csv";document.body.appendChild(a);a.click();a.remove();
+ setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+}
+var tabs=[["dash","Ringkasan",vDash],["g","Green bean",vGreen],["r","Roast",vRoast],["s","Penjualan",vSales],["rep","Laporan",vRep]];
+function render(){
+ $("min").value=D.min;$("op").value=OP;
+ $("nav").innerHTML=tabs.map(function(t){return'<button class="'+(t[0]===tab?"on":"")+'" onclick="setTab(\''+t[0]+'\')">'+t[1]+"</button>"}).join("");
+ $("main").innerHTML=tabs.filter(function(t){return t[0]===tab})[0][2]()}
+render();poll();setInterval(poll,4000);
+</script>
+</body>
+</html>
